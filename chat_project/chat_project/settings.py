@@ -37,9 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest-framework',
-    'channels',
     'chat',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +56,9 @@ ROOT_URLCONF = 'chat_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,14 +122,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
-
+# Channels
+ASGI_APPLICATION = 'chat_project.asgi.application'
 CHANNEL_LAYERS = {
-      "default": {
-      "BACKEND": "asgi_redis.RedisChannelLayer",
-      "CONFIG": {
-         "hosts": [(redis_host, 6379)],
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
     },
-    "ROUTING": "routing.application",
-   },
 }
