@@ -1,26 +1,65 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Chat Rooms</title>
-</head>
-<body>
-    What chat room would you like to enter?<br>
-    <input id="room-name-input" type="text" size="100"><br>
-    <input id="room-name-submit" type="button" value="Enter">
-
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Join a Chat!</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="{% static 'css/join_chat.css' %}" />
+  </head>
+  <body>
+    <div class="login-container">
+      <form>
+        <div class="mb-3">
+          <label for="room-name-input" class="form-label">Room Name</label>
+          <input type="text" class="form-control" id="room-name-input" />
+        </div>
+        <div class="mb-3">
+          <label for="room-password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="room-passwordme-input"
+            aria-describedby="passwordHelp"
+          />
+        </div>
+        <div id="passwordHelp" class="form-text">
+          6-digit code created by the room owner
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary mt-3"
+          id="room-name-submit"
+        >
+          Submit
+        </button>
+      </form>
+    </div>
     <script>
-        document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#room-name-submit').click();
-            }
-        };
+      document.querySelector("#room-name-input").focus();
+      document.querySelector("#room-name-input").onkeyup = function (e) {
+        if (e.keyCode === 13) {
+          // enter, return
+          document.querySelector("#room-name-submit").click();
+        }
+      };
 
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            let roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = roomName + '/';
-        };
+      document.querySelector("#room-name-submit").onclick = function (e) {
+        let roomName = document.querySelector("#room-name-input").value;
+        window.location.pathname = roomName + "/";
+      };
     </script>
-</body>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+      crossorigin="anonymous"
+    ></script>
+  </body>
 </html>
