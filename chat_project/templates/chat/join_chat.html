@@ -18,6 +18,10 @@
     <div class="login-container">
       <form>
         <div class="mb-3">
+          <label for="user-name-input" class="form-label">Username</label>
+          <input type="text" class="form-control" id="user-name-input" />
+        </div>
+        <div class="mb-3">
           <label for="room-name-input" class="form-label">Room Name</label>
           <input type="text" class="form-control" id="room-name-input" />
         </div>
@@ -43,7 +47,15 @@
       </form>
     </div>
     <script>
-      document.querySelector("#room-name-input").focus();
+      document.querySelector("#user-name-input").focus();
+      document.querySelector("#user-name-input").onkeyup = function (e) {
+        if (e.keyCode === 13) {
+          // enter, return
+          let username = document.querySelector("#user-name-input").value;
+          localStorage.setItem("user-name", username);
+          document.querySelector("#room-name-input").focus();
+        }
+      };
       document.querySelector("#room-name-input").onkeyup = function (e) {
         if (e.keyCode === 13) {
           // enter, return

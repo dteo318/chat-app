@@ -44,11 +44,19 @@
 
       chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
-        const message_elem = document.createElement("P");
-        const message = document.createTextNode(data.message);
         const chat_box = document.querySelector("#chat-log");
+
+        const message_elem = document.createElement("P");
+        const username_elem = document.createElement("STRONG");
+        const message = document.createTextNode(data.message);
+        const username = document.createTextNode(data.username + ": ");
+
+        username_elem.appendChild(username);
+        message_elem.appendChild(username_elem);
         message_elem.appendChild(message);
+
         chat_box.appendChild(message_elem);
+
         chat_box.scrollTop = chat_box.scrollHeight;
       };
 
@@ -66,9 +74,12 @@
 
       document.querySelector("#chat-message-submit").onclick = function (e) {
         const messageInputDom = document.querySelector("#chat-message-input");
+        const username = localStorage.getItem("user-name");
         const message = messageInputDom.value;
+
         chatSocket.send(
           JSON.stringify({
+            username: username,
             message: message,
           })
         );
