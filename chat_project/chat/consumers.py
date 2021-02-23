@@ -33,12 +33,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         current_user = text_data_json['username']
         message = text_data_json['message']
+        message_type = text_data_json['message_type']
 
         # Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
+                'message_type': message_type,
                 'username' : current_user,
                 'message': message
             }
@@ -48,11 +50,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         message = event['message']
         current_user = event['username']
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            'message': message,
-            'username' : current_user
-        }))
+        message_type = event['message_type']
+
+        if message_type == 'save_message':
+            print("YO")
+        else:
+            # Send message to WebSocket
+            await self.send(text_data=json.dumps({
+                'message_type': message_type,
+                'message': message,
+                'username' : current_user
+            }))
 
     def disconnect_user(self, user_name, room_name):
         room_model = Room.objects.get(group_name=room_name)
@@ -72,3 +80,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 username=user_name,
                 connected_to=room_model
             )
+
+    def save_message(self, user_name, room_name, selected_message):
+        pass
