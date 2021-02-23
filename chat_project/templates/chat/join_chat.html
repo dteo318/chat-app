@@ -65,8 +65,7 @@
 
       document.querySelector("#room-name-submit").onclick = function (e) {
         let roomName = document.querySelector("#room-name-input").value;
-        let username = localStorage.getItem("user-name");
-        window.location.pathname = username + "/" + roomName + "/";
+        window.location.pathname = roomName + "/";
       };
     </script>
     <script
