@@ -32,10 +32,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         await database_sync_to_async(self.disconnect_user)(self.username, self.room_name)
 
-        room_is_empty = await database_sync_to_async(self.no_more_connections)(self.room_name)
+        # Closes room on all connections closed - Will loose message data
+        # room_is_empty = await database_sync_to_async(self.no_more_connections)(self.room_name)
 
-        if room_is_empty:
-            await database_sync_to_async(self.delete_room)(self.room_name)
+        # if room_is_empty:
+        #     await database_sync_to_async(self.delete_room)(self.room_name)
 
         # Leave room group
         await self.channel_layer.group_discard(
