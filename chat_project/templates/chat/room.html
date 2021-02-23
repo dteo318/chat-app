@@ -12,7 +12,7 @@
       integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="{% static 'css/room.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/room_temp.css' %}" />
   </head>
   <nav>
     <div class="dropdown dropdown-spacing">
@@ -69,9 +69,42 @@
         username_elem.appendChild(username);
         message_elem.appendChild(username_elem);
         message_elem.appendChild(message);
+        
+        message_elem.addEventListener("click", function(e) {
+          elem_clicked = e.target;
+          if (elem_clicked.nodeName == 'P') {
+            const message_username = elem_clicked.querySelector('strong').innerText.slice(0, -2);
+            const selected_message = elem_clicked.innerText.slice(message_username.length + 2, );
 
+            if (elem_clicked.className == 'saved') {
+              // Unsave message
+              
+              // chatSocket.send(
+              //   JSON.stringify({
+              //     message_type: 'unsave_message',
+              //     username: message_username,
+              //     message: selected_message
+              //   })
+              // );
+
+              elem_clicked.className = '';
+            } else {
+              // Save message
+              chatSocket.send(
+                JSON.stringify({
+                  message_type: 'save_message',
+                  username: message_username,
+                  message: selected_message
+                })
+              );
+
+              elem_clicked.className = 'saved';
+            }
+            
+          }
+        })
+        
         chat_box.appendChild(message_elem);
-
         chat_box.scrollTop = chat_box.scrollHeight;
       };
 
@@ -79,6 +112,7 @@
 
         chatSocket.send(
           JSON.stringify({
+            message_type: 'broadcast',
             username: 'ADMIN',
             message: `${current_user} has left the chat...`,
           })
@@ -115,6 +149,7 @@
 
         chatSocket.send(
           JSON.stringify({
+            message_type: 'broadcast',
             username: current_user,
             message: message,
           })

@@ -50,3 +50,8 @@ nav {
   pointer-events: none;
   cursor: default;
 }
+
+.saved {
+  background-color: lightgrey;
+  width: 95%;
+}
