@@ -20,7 +20,7 @@
         Users
       </button>
       <div class="dropdown-menu" id="users-menu" aria-labelledby="dropdownMenuButton">
-        <!-- Populated using Ajax -->
+        <!-- Populated using Ajax requests -->
       </div>
     </div>
   </div>
@@ -77,12 +77,12 @@
 
       function chatClosed() {
 
-        // chatSocket.send(
-        //   JSON.stringify({
-        //     username: 'ADMIN',
-        //     message: `${current_user} has left the chat...`,
-        //   })
-        // );
+        chatSocket.send(
+          JSON.stringify({
+            username: 'ADMIN',
+            message: `${current_user} has left the chat...`,
+          })
+        );
 
         $.ajax({
           url: '/ajax/removeUser',
