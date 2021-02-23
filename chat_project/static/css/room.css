@@ -1,9 +1,25 @@
 body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-rows: 5% 95%;
   height: 100vh;
   background-color: #daded4;
+}
+
+nav {
+  grid-row: 1 / 2;
+  align-self: center;
+  justify-self: end;
+}
+
+.dropdown-spacing {
+  margin-top: 5rem;
+  margin-right: 11rem;
+}
+
+.container {
+  grid-row: 2 / 3;
+  justify-self: center;
+  align-self: center;
 }
 
 .shadow-style {
@@ -28,4 +44,9 @@ body {
 .btn-style {
   background-color: #a3bcb6;
   color: #39603d;
+}
+
+.inactiveLink {
+  pointer-events: none;
+  cursor: default;
 }

@@ -12,8 +12,19 @@
       integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="{% static 'css/room1.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/room.css' %}" />
   </head>
+  <nav>
+    <div class="dropdown dropdown-spacing">
+      <button class="btn btn-secondary dropdown-toggle" type="button" id="users-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Users
+      </button>
+      <div class="dropdown-menu" id="users-menu" aria-labelledby="dropdownMenuButton">
+        <!-- Populated using Ajax -->
+      </div>
+    </div>
+  </div>
+  </nav>
   <body>
     <div class="container shadow-style">
       <div class="chat-box messages" id="chat-log">
@@ -33,6 +44,8 @@
       </div>
     </div>
     {{ room_name|json_script:"room-name" }}
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
     <script>
       const roomName = JSON.parse(
         document.getElementById("room-name").textContent
@@ -85,11 +98,38 @@
         );
         messageInputDom.value = "";
       };
+
+      $("#users-button").click(function () {
+        $.ajax({
+          url: '/ajax/getUsers',
+          data: {
+            'room' : roomName
+          },
+          dataType: 'json',
+          success: function (data) {
+            const user_menu = document.querySelector('#users-menu');
+            const current_user = localStorage.getItem("user-name");
+
+            user_menu.innerHTML = '';
+            user_data = JSON.parse(data.room_connections)
+
+            user_data.forEach(function (user, index) {
+              let username_elem = document.createElement('A');
+              username_elem.className = 'dropdown-item inactiveLink'
+              username = user.fields.username
+
+              if (username == current_user) {
+                let current_user_bold = document.createElement('STRONG');
+                current_user_bold.innerHTML = username;
+                username_elem.appendChild(current_user_bold);
+              } else {
+                username_elem.innerHTML = username;
+              }
+              user_menu.appendChild(username_elem);
+            });
+          }
+        });
+      });
     </script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
-      crossorigin="anonymous"
-    ></script>
   </body>
 </html>
