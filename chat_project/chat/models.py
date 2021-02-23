@@ -17,7 +17,7 @@ class Connection(models.Model):
 
 class Message(models.Model):
     sent_by = models.CharField(max_length=200, default="UNKNOWN")
-    sent_in_room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, related_name="room_message")
+    sent_in_room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, related_name="room_message")
     sent_date = models.DateTimeField(auto_now_add=True)
     saved_message = models.CharField(max_length=500, default="")
 

@@ -32,6 +32,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         await database_sync_to_async(self.disconnect_user)(self.username, self.room_name)
 
+        room_is_empty = await database_sync_to_async(self.no_more_connections)(self.room_name)
+
+        if room_is_empty:
+            await database_sync_to_async(self.delete_room)(self.room_name)
+
         # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -45,23 +50,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json['message']
         message_type = text_data_json['message_type']
 
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message_type': message_type,
-                'username' : current_user,
-                'message': message
-            }
-        )
-
-    # Receive message from room group
-    async def chat_message(self, event):
-        message = event['message']
-        current_user = event['username']
-        message_type = event['message_type']
-
         if message_type == 'save_message':
             await database_sync_to_async(self.save_message)(current_user, self.room_name, message)
             print("CREATE SAVED MESSAGE")
@@ -70,8 +58,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await database_sync_to_async(self.unsave_message)(current_user, self.room_name, message)
             print("DELETE SAVED MESSAGE")
         else:
-            # Send message to WebSocket
-            await self.send(text_data=json.dumps({
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message_type': message_type,
+                    'username' : current_user,
+                    'message': message
+                }
+            )
+
+    # Receive message from room group
+    async def chat_message(self, event):
+        message = event['message']
+        current_user = event['username']
+        message_type = event['message_type']
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
                 'message_type': message_type,
                 'message': message,
                 'username' : current_user
@@ -116,6 +121,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     def get_room_messages(self, room_name):
         room_model = Room.objects.get(group_name=room_name)
-        room_messages = room_model.room_message.all().order_by("sent_date")
+        room_messages = room_model.room_message.all().order_by("-sent_date")
         print(room_messages)
         return room_messages
+
+    def no_more_connections(self, room_name):
+        return Room.objects.get(group_name=room_name).room_connection.count() == 0
+
+    def delete_room(self, room_name):
+        room_model = Room.objects.get(group_name=room_name)
+        room_model.delete()
