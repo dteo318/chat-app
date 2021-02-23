@@ -25,7 +25,7 @@
     </div>
   </div>
   </nav>
-  <body>
+  <body onunload="chatClosed()">
     <div class="container shadow-style">
       <div class="chat-box messages" id="chat-log">
         <p class="start-message">You may begin sending messages...</p>
@@ -51,8 +51,10 @@
         document.getElementById("room-name").textContent
       );
 
+      const current_user = localStorage.getItem("user-name");
+
       const chatSocket = new WebSocket(
-        "ws://" + window.location.host + "/ws/" + roomName + "/"
+        "ws://" + window.location.host + "/ws/" + current_user + '/' + roomName + "/"
       );
 
       chatSocket.onmessage = function (e) {
@@ -73,6 +75,28 @@
         chat_box.scrollTop = chat_box.scrollHeight;
       };
 
+      function chatClosed() {
+
+        // chatSocket.send(
+        //   JSON.stringify({
+        //     username: 'ADMIN',
+        //     message: `${current_user} has left the chat...`,
+        //   })
+        // );
+
+        $.ajax({
+          url: '/ajax/removeUser',
+          data: {
+            'user' : current_user,
+            'room' : roomName
+          },
+          dataType: 'json',
+          success: function (data) {
+            console.log("User logged out");
+          }
+        });
+      }
+
       chatSocket.onclose = function (e) {
         console.error("Chat socket closed unexpectedly");
       };
@@ -87,12 +111,11 @@
 
       document.querySelector("#chat-message-submit").onclick = function (e) {
         const messageInputDom = document.querySelector("#chat-message-input");
-        const username = localStorage.getItem("user-name");
         const message = messageInputDom.value;
 
         chatSocket.send(
           JSON.stringify({
-            username: username,
+            username: current_user,
             message: message,
           })
         );
@@ -108,7 +131,6 @@
           dataType: 'json',
           success: function (data) {
             const user_menu = document.querySelector('#users-menu');
-            const current_user = localStorage.getItem("user-name");
 
             user_menu.innerHTML = '';
             user_data = JSON.parse(data.room_connections)

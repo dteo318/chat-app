@@ -43,3 +43,16 @@ def update_users_ajax(request):
     data = {'room_connections' : serializers.serialize('json', room_connections)}
 
     return JsonResponse(data)
+
+def remove_user_ajax(request):
+    room_name = request.GET.get('room')
+    room_model = Room.objects.get(group_name=room_name)
+    user_name = request.GET.get('user')
+    connection_model = Connection.objects.get(username=user_name, connected_to=room_model)
+
+    connection_model.delete()
+    print("deleted user model")
+    
+    data = {'user_deleted' : user_name}
+
+    return JsonResponse(data)
