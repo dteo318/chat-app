@@ -1,6 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Room, Connection
+from .models import Room, Connection, Message
 from channels.db import database_sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -53,7 +53,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_type = event['message_type']
 
         if message_type == 'save_message':
-            print("YO")
+            await database_sync_to_async(self.save_message)(current_user, self.room_name, message)
+            print("CREATE SAVED MESSAGE")
+            
+        elif message_type == 'unsave_message':
+            await database_sync_to_async(self.unsave_message)(current_user, self.room_name, message)
+            print("DELETE SAVED MESSAGE")
         else:
             # Send message to WebSocket
             await self.send(text_data=json.dumps({
@@ -82,4 +87,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
     def save_message(self, user_name, room_name, selected_message):
-        pass
+        room_model = Room.objects.get(group_name=room_name)
+        connection_model = Connection.objects.get(username=user_name, connected_to=room_model)
+        message_model = Message.objects.create(
+            sent_by = connection_model,
+            sent_in_room = room_model,
+            saved_message = selected_message
+        )
+    
+    def unsave_message(self, user_name, room_name, selected_message):
+        room_model = Room.objects.get(group_name=room_name)
+        connection_model = Connection.objects.get(username=user_name, connected_to=room_model)
+        message_model = Message.objects.get(
+            sent_by = connection_model,
+            sent_in_room = room_model,
+            saved_message = selected_message
+        )
+        
+        message_model.delete()

@@ -78,14 +78,13 @@
 
             if (elem_clicked.className == 'saved') {
               // Unsave message
-              
-              // chatSocket.send(
-              //   JSON.stringify({
-              //     message_type: 'unsave_message',
-              //     username: message_username,
-              //     message: selected_message
-              //   })
-              // );
+              chatSocket.send(
+                JSON.stringify({
+                  message_type: 'unsave_message',
+                  username: message_username,
+                  message: selected_message
+                })
+              );
 
               elem_clicked.className = '';
             } else {
@@ -100,7 +99,7 @@
 
               elem_clicked.className = 'saved';
             }
-            
+
           }
         })
         
