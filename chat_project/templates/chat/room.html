@@ -61,50 +61,103 @@
         const data = JSON.parse(e.data);
         const chat_box = document.querySelector("#chat-log");
 
-        const message_elem = document.createElement("P");
-        const username_elem = document.createElement("STRONG");
-        const message = document.createTextNode(data.message);
-        const username = document.createTextNode(data.username + ": ");
+        if (data.message_type == 'display_saved_messages') {
+          saved_messages = JSON.parse(data.messages);
 
-        username_elem.appendChild(username);
-        message_elem.appendChild(username_elem);
-        message_elem.appendChild(message);
+          saved_messages.forEach(function(saved_message_model, index) {
+            const message_elem = document.createElement("P");
+            const username_elem = document.createElement("STRONG");
+            const message = document.createTextNode(saved_message_model.fields.saved_message);
+            const username = document.createTextNode(saved_message_model.fields.sent_by + ": ");
+
+            username_elem.appendChild(username);
+            message_elem.appendChild(username_elem);
+            message_elem.appendChild(message);
+            message_elem.className = 'saved';
+          
+            message_elem.addEventListener("click", function(e) {
+              elem_clicked = e.target;
+              if (elem_clicked.nodeName == 'P') {
+                const message_username = elem_clicked.querySelector('strong').innerText.slice(0, -2);
+                const selected_message = elem_clicked.innerText.slice(message_username.length + 2, );
+
+                if (elem_clicked.className == 'saved') {
+                  // Unsave message
+                  chatSocket.send(
+                    JSON.stringify({
+                      message_type: 'unsave_message',
+                      username: message_username,
+                      message: selected_message
+                    })
+                  );
+
+                  elem_clicked.className = '';
+                } else {
+                  // Save message
+                  chatSocket.send(
+                    JSON.stringify({
+                      message_type: 'save_message',
+                      username: message_username,
+                      message: selected_message
+                    })
+                  );
+
+                  elem_clicked.className = 'saved';
+                }
+
+              }
+          })
         
-        message_elem.addEventListener("click", function(e) {
-          elem_clicked = e.target;
-          if (elem_clicked.nodeName == 'P') {
-            const message_username = elem_clicked.querySelector('strong').innerText.slice(0, -2);
-            const selected_message = elem_clicked.innerText.slice(message_username.length + 2, );
+          chat_box.appendChild(message_elem);
+          chat_box.scrollTop = chat_box.scrollHeight;
+          })
 
-            if (elem_clicked.className == 'saved') {
-              // Unsave message
-              chatSocket.send(
-                JSON.stringify({
-                  message_type: 'unsave_message',
-                  username: message_username,
-                  message: selected_message
-                })
-              );
+        } else {
+          const message_elem = document.createElement("P");
+          const username_elem = document.createElement("STRONG");
+          const message = document.createTextNode(data.message);
+          const username = document.createTextNode(data.username + ": ");
 
-              elem_clicked.className = '';
-            } else {
-              // Save message
-              chatSocket.send(
-                JSON.stringify({
-                  message_type: 'save_message',
-                  username: message_username,
-                  message: selected_message
-                })
-              );
+          username_elem.appendChild(username);
+          message_elem.appendChild(username_elem);
+          message_elem.appendChild(message);
+        
+          message_elem.addEventListener("click", function(e) {
+            elem_clicked = e.target;
+            if (elem_clicked.nodeName == 'P') {
+              const message_username = elem_clicked.querySelector('strong').innerText.slice(0, -2);
+              const selected_message = elem_clicked.innerText.slice(message_username.length + 2, );
 
-              elem_clicked.className = 'saved';
+              if (elem_clicked.className == 'saved') {
+                // Unsave message
+                chatSocket.send(
+                  JSON.stringify({
+                    message_type: 'unsave_message',
+                    username: message_username,
+                    message: selected_message
+                  })
+                );
+
+                elem_clicked.className = '';
+              } else {
+                // Save message
+                chatSocket.send(
+                  JSON.stringify({
+                    message_type: 'save_message',
+                    username: message_username,
+                    message: selected_message
+                  })
+                );
+
+                elem_clicked.className = 'saved';
+              }
+
             }
-
-          }
-        })
+          })
         
-        chat_box.appendChild(message_elem);
-        chat_box.scrollTop = chat_box.scrollHeight;
+          chat_box.appendChild(message_elem);
+          chat_box.scrollTop = chat_box.scrollHeight;
+        }
       };
 
       function chatClosed() {

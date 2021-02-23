@@ -2,6 +2,8 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Room, Connection, Message
 from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
+from django.core import serializers
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -18,6 +20,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+
+        room_messages = await database_sync_to_async(self.get_room_messages)(self.room_name)
+
+        await self.send(text_data=json.dumps({
+            'type': 'chat_message',
+            'message_type': 'display_saved_messages',
+            'messages': await sync_to_async(serializers.serialize)('json', room_messages)
+        }))
 
     async def disconnect(self, close_code):
         await database_sync_to_async(self.disconnect_user)(self.username, self.room_name)
@@ -88,20 +98,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     def save_message(self, user_name, room_name, selected_message):
         room_model = Room.objects.get(group_name=room_name)
-        connection_model = Connection.objects.get(username=user_name, connected_to=room_model)
         message_model = Message.objects.create(
-            sent_by = connection_model,
+            sent_by = user_name,
             sent_in_room = room_model,
             saved_message = selected_message
         )
     
     def unsave_message(self, user_name, room_name, selected_message):
         room_model = Room.objects.get(group_name=room_name)
-        connection_model = Connection.objects.get(username=user_name, connected_to=room_model)
         message_model = Message.objects.get(
-            sent_by = connection_model,
+            sent_by = user_name,
             sent_in_room = room_model,
             saved_message = selected_message
         )
         
         message_model.delete()
+
+    def get_room_messages(self, room_name):
+        room_model = Room.objects.get(group_name=room_name)
+        room_messages = room_model.room_message.all().order_by("sent_date")
+        print(room_messages)
+        return room_messages

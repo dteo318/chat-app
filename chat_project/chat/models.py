@@ -16,7 +16,10 @@ class Connection(models.Model):
         return self.username
 
 class Message(models.Model):
-    sent_by = models.ForeignKey(Connection, on_delete=models.CASCADE, related_name="connection_message")
-    sent_in_room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="room_message")
+    sent_by = models.CharField(max_length=200, default="UNKNOWN")
+    sent_in_room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, related_name="room_message")
     sent_date = models.DateTimeField(auto_now_add=True)
     saved_message = models.CharField(max_length=500, default="")
+
+    def __str__(self):
+        return self.sent_by + '_' + self.saved_message
