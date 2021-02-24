@@ -71,6 +71,7 @@
         const data = JSON.parse(e.data);
         const chat_box = document.querySelector("#chat-log");
 
+        // Make adding message to screen a function
         if (data.message_type == 'display_saved_messages') {
           saved_messages = JSON.parse(data.messages);
 
@@ -121,6 +122,12 @@
           chat_box.appendChild(message_elem);
           chat_box.scrollTop = chat_box.scrollHeight;
           })
+
+        } else if (data.message_type == 'update_password') {
+          let password = data.message;
+          // Make update password a function
+          let password_setter = document.querySelector("#password-setter");
+          password_setter.value = password;
 
         } else {
           const message_elem = document.createElement("P");
@@ -253,17 +260,13 @@
       function setPassword() {
         const password = document.querySelector('#password-setter').value;
 
-        $.ajax({
-          url: '/ajax/SetPassword',
-          data: {
-            'room' : roomName,
-            'password' : password
-          },
-          dataType: 'json',
-          success: function (data) {
-            console.log("Password set");
-          }
-        });
+        // Using websocket to update password
+        chatSocket.send(
+          JSON.stringify({
+            message_type: 'update_password',
+            password: password
+          })
+        );
       };
     </script>
   </body>
