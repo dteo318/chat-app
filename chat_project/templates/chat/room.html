@@ -57,16 +57,16 @@
     <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
     <script>
+      // Global vairables
       const roomName = JSON.parse(
         document.getElementById("room-name").textContent
       );
-
       const current_user = localStorage.getItem("user-name");
-
       const chatSocket = new WebSocket(
         "ws://" + window.location.host + "/ws/" + current_user + '/' + roomName + "/"
       );
 
+      // Websocket event handlers
       chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const chat_box = document.querySelector("#chat-log");
@@ -74,136 +74,25 @@
         // Make adding message to screen a function
         if (data.message_type == 'display_saved_messages') {
           saved_messages = JSON.parse(data.messages);
-
           saved_messages.forEach(function(saved_message_model, index) {
-            const message_elem = document.createElement("P");
-            const username_elem = document.createElement("STRONG");
-            const message = document.createTextNode(saved_message_model.fields.saved_message);
-            const username = document.createTextNode(saved_message_model.fields.sent_by + ": ");
-
-            username_elem.appendChild(username);
-            message_elem.appendChild(username_elem);
-            message_elem.appendChild(message);
-            message_elem.className = 'saved';
-          
-            message_elem.addEventListener("click", function(e) {
-              elem_clicked = e.target;
-              if (elem_clicked.nodeName == 'P') {
-                const message_username = elem_clicked.querySelector('strong').innerText.slice(0, -2);
-                const selected_message = elem_clicked.innerText.slice(message_username.length + 2, );
-
-                if (elem_clicked.className == 'saved') {
-                  // Unsave message
-                  chatSocket.send(
-                    JSON.stringify({
-                      message_type: 'unsave_message',
-                      username: message_username,
-                      message: selected_message
-                    })
-                  );
-
-                  elem_clicked.className = '';
-                } else {
-                  // Save message
-                  chatSocket.send(
-                    JSON.stringify({
-                      message_type: 'save_message',
-                      username: message_username,
-                      message: selected_message
-                    })
-                  );
-
-                  elem_clicked.className = 'saved';
-                }
-
-              }
-          })
-        
-          chat_box.appendChild(message_elem);
-          chat_box.scrollTop = chat_box.scrollHeight;
+            displayMessage(chat_box, saved_message_model.fields.saved_message, saved_message_model.fields.sent_by, true);
           })
 
         } else if (data.message_type == 'update_password') {
           let password = data.message;
-          // Make update password a function
           let password_setter = document.querySelector("#password-setter");
           password_setter.value = password;
 
         } else {
-          const message_elem = document.createElement("P");
-          const username_elem = document.createElement("STRONG");
-          const message = document.createTextNode(data.message);
-          const username = document.createTextNode(data.username + ": ");
-
-          username_elem.appendChild(username);
-          message_elem.appendChild(username_elem);
-          message_elem.appendChild(message);
-        
-          message_elem.addEventListener("click", function(e) {
-            elem_clicked = e.target;
-            if (elem_clicked.nodeName == 'P') {
-              const message_username = elem_clicked.querySelector('strong').innerText.slice(0, -2);
-              const selected_message = elem_clicked.innerText.slice(message_username.length + 2, );
-
-              if (elem_clicked.className == 'saved') {
-                // Unsave message
-                chatSocket.send(
-                  JSON.stringify({
-                    message_type: 'unsave_message',
-                    username: message_username,
-                    message: selected_message
-                  })
-                );
-
-                elem_clicked.className = '';
-              } else {
-                // Save message
-                chatSocket.send(
-                  JSON.stringify({
-                    message_type: 'save_message',
-                    username: message_username,
-                    message: selected_message
-                  })
-                );
-
-                elem_clicked.className = 'saved';
-              }
-
-            }
-          })
-        
-          chat_box.appendChild(message_elem);
-          chat_box.scrollTop = chat_box.scrollHeight;
+          displayMessage(chat_box, data.message, data.username, false);
         }
       };
-
-      function chatClosed() {
-
-        chatSocket.send(
-          JSON.stringify({
-            message_type: 'broadcast',
-            username: 'ADMIN',
-            message: `${current_user} has left the chat...`,
-          })
-        );
-
-        $.ajax({
-          url: '/ajax/removeUser',
-          data: {
-            'user' : current_user,
-            'room' : roomName
-          },
-          dataType: 'json',
-          success: function (data) {
-            console.log("User logged out");
-          }
-        });
-      }
 
       chatSocket.onclose = function (e) {
         console.error("Chat socket closed unexpectedly");
       };
 
+      // Chat input handlers
       document.querySelector("#chat-message-input").focus();
       document.querySelector("#chat-message-input").onkeyup = function (e) {
         if (e.keyCode === 13) {
@@ -226,6 +115,7 @@
         messageInputDom.value = "";
       };
 
+      // User menu updater
       $("#users-button").click(function () {
         $.ajax({
           url: '/ajax/getUsers',
@@ -257,6 +147,61 @@
         });
       });
 
+      // Functions
+      function toggleSavedMessage(e) {
+        elem_clicked = e.target;
+        if (elem_clicked.nodeName == 'P') {
+          const message_username = elem_clicked.querySelector('strong').innerText.slice(0, -2);
+          const selected_message = elem_clicked.innerText.slice(message_username.length + 2, );
+
+          if (elem_clicked.className == 'saved') {
+            // Unsave message
+            chatSocket.send(
+              JSON.stringify({
+                message_type: 'unsave_message',
+                username: message_username,
+                message: selected_message
+              })
+            );
+
+            elem_clicked.className = '';
+          } else {
+            // Save message
+            chatSocket.send(
+              JSON.stringify({
+                message_type: 'save_message',
+                username: message_username,
+                message: selected_message
+              })
+            );
+
+            elem_clicked.className = 'saved';
+          }
+
+        }
+      }
+
+      function displayMessage(chat_box, message, username, isSaved) {
+        const message_elem = document.createElement("P");
+        const username_elem = document.createElement("STRONG");
+        const message_node = document.createTextNode(message);
+        const username_node = document.createTextNode(username + ": ");
+
+        username_elem.appendChild(username_node);
+        message_elem.appendChild(username_elem);
+        message_elem.appendChild(message_node);
+
+        if (isSaved) {
+          message_elem.className = 'saved';
+        }
+      
+        message_elem.addEventListener("click", toggleSavedMessage);
+      
+        chat_box.appendChild(message_elem);
+        chat_box.scrollTop = chat_box.scrollHeight;
+
+      }
+
       function setPassword() {
         const password = document.querySelector('#password-setter').value;
 
@@ -268,6 +213,28 @@
           })
         );
       };
+
+      function chatClosed() {
+        chatSocket.send(
+          JSON.stringify({
+            message_type: 'broadcast',
+            username: 'ADMIN',
+            message: `${current_user} has left the chat...`,
+          })
+        );
+
+        $.ajax({
+          url: '/ajax/removeUser',
+          data: {
+            'user' : current_user,
+            'room' : roomName
+          },
+          dataType: 'json',
+          success: function (data) {
+            console.log("User logged out");
+          }
+        });
+      }
     </script>
   </body>
 </html>
