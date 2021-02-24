@@ -19,8 +19,18 @@
       <button class="btn btn-secondary dropdown-toggle" type="button" id="users-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Users
       </button>
-      <div class="dropdown-menu" id="users-menu" aria-labelledby="dropdownMenuButton">
-        <!-- Populated using Ajax requests -->
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <!-- For setting password -->
+        <div class="input-group px-2">
+          <input type="text" class="form-control" id="password-setter" name="password-setter">
+          <button type="button" id="password-setter-button" class="btn btn-style" onclick="setPassword()">
+            Set
+          </button>
+        </div>
+        <hr class="dropdown-divider">
+        <div id="users-menu">
+          <!-- Populated using Ajax requests -->
+        </div>
       </div>
     </div>
   </div>
@@ -239,6 +249,22 @@
           }
         });
       });
+
+      function setPassword() {
+        const password = document.querySelector('#password-setter').value;
+
+        $.ajax({
+          url: '/ajax/SetPassword',
+          data: {
+            'room' : roomName,
+            'password' : password
+          },
+          dataType: 'json',
+          success: function (data) {
+            console.log("Password set");
+          }
+        });
+      };
     </script>
   </body>
 </html>

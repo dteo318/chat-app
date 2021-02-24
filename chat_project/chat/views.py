@@ -18,3 +18,19 @@ def update_users_ajax(request):
     data = {'room_connections' : serializers.serialize('json', room_connections)}
 
     return JsonResponse(data)
+
+def set_room_password_ajax(request):
+    room_name = request.GET.get('room')
+    room_model = Room.objects.get(group_name=room_name)
+    password = request.GET.get('password')
+    room_model.password = password
+    room_model.save(update_fields=["password"])
+    return JsonResponse({})
+
+def check_room_password_ajax(request):
+    room_name = request.GET.get('room')
+    room_model = Room.objects.get(group_name=room_name)
+    password = request.GET.get('password')
+    return JsonResponse({
+       'is_correct_password' : room_model.password == password
+    })
