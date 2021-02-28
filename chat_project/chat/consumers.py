@@ -70,6 +70,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'message': password
                 }
             )
+        
+        elif message_type == 'is_typing':
+            user_typing = text_data_json['user_typing']
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message_type': "is_typing",
+                    'user_typing': user_typing
+                }
+            )
 
         else:
             current_user = text_data_json['username']
@@ -106,6 +117,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'message_type': message_type,
                     'message': message,
                 }))
+        
+        elif message_type == 'is_typing':
+            user_typing = event['user_typing']
+            await self.send(text_data=json.dumps({
+                    'message_type': message_type,
+                    'user_typing' : user_typing
+                }))
+
         else:
             message = event['message']
             current_user = event['username']

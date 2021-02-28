@@ -12,7 +12,7 @@
       integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="{% static 'css/room_temp.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/room.css' %}" />
   </head>
   <nav>
     <div class="dropdown dropdown-spacing">
@@ -39,6 +39,9 @@
     <div class="container shadow-style">
       <div class="chat-box messages" id="chat-log">
         <p class="start-message">You may begin sending messages...</p>
+      </div>
+      <div class="alert alert-light" role="alert" id="user_typing">
+        <!-- Shows user typing using received chatSocket message -->
       </div>
       <div class="input-group">
         <span class="input-group-text">Message</span>
@@ -72,7 +75,16 @@
         const chat_box = document.querySelector("#chat-log");
 
         // Make adding message to screen a function
-        if (data.message_type == 'display_saved_messages') {
+        if (data.message_type == 'is_typing') {
+          user_typing = data.user_typing;
+          user_typing_alert = document.getElementById('user_typing');
+
+          if (user_typing != current_user) {
+            user_typing_alert.innerText = `${user_typing} is typing...`;
+            setTimeout(function() {user_typing_alert.innerText = ''}, 3000);
+          }
+          
+        } else if (data.message_type == 'display_saved_messages') {
           saved_messages = JSON.parse(data.messages);
           saved_messages.forEach(function(saved_message_model, index) {
             displayMessage(chat_box, saved_message_model.fields.saved_message, saved_message_model.fields.sent_by, true);
@@ -99,6 +111,15 @@
           // enter, return
           document.querySelector("#chat-message-submit").click();
         }
+      };
+
+      document.querySelector("#chat-message-input").onkeypress = function (e) {
+        chatSocket.send(
+          JSON.stringify({
+          message_type: 'is_typing',
+          user_typing: current_user,
+          })
+        );
       };
 
       document.querySelector("#chat-message-submit").onclick = function (e) {
