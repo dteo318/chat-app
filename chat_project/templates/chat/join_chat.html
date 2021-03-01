@@ -12,22 +12,33 @@
       integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="{% static 'css/join_chat.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/join_chat_temp.css' %}" />
   </head>
   <body>
     <div class="login-container">
       <form>
         <div class="mb-3">
           <label for="user-name-input" class="form-label">Username</label>
-          <input type="text" class="form-control" id="user-name-input" />
+          <input
+            type="text"
+            autocomplete="off"
+            class="form-control"
+            id="user-name-input"
+          />
         </div>
         <div class="mb-3">
           <label for="room-name-input" class="form-label">Room Name</label>
-          <input type="text" class="form-control" id="room-name-input" />
+          <input
+            type="text"
+            autocomplete="off"
+            class="form-control"
+            id="room-name-input"
+          />
         </div>
         <div class="mb-3">
           <label for="room-password" class="form-label">Password</label>
           <input
+            autocomplete="off"
             type="password"
             class="form-control"
             id="room-password-input"
